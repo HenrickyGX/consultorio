@@ -6,15 +6,15 @@
  * 
  */
 
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
-export interface Doutor{
+export interface Doutor {
     nome: string;
     email: string;
     telefone: string;
 }
 
-export interface Consulta{
+export interface Consulta {
     id: number;
     data: string;
     nomePaciente: string;
@@ -35,18 +35,26 @@ interface ContextProps {
 export const ConsultasContext = createContext<Partial<ContextProps>>({})
 
 
-export const ConsultasProvider = ({children}) => {
-    const  [doutores, setDoutores] = useState<Doutor[]>([])
-    const [consultas, setConsultas] = useState<Consulta[]>([])
+export const ConsultasProvider = ({ children }) => {
+    const [doutores, setDoutores] = useState<Doutor[]>(JSON.parse(localStorage.getItem('doutores') || "") || [])
+    const [consultas, setConsultas] = useState<Consulta[]>(JSON.parse(localStorage.getItem('consultas') || "") || [])
 
-const adicionarDoutor = (doutor: Doutor) => { 
-   setDoutores([...doutores, doutor]) 
- }
-const agendarConsulta = (consulta: Consulta) => { 
-    setConsultas([...consultas, consulta])
- }
+    const adicionarDoutor = (doutor: Doutor) => {
+        setDoutores([...doutores, doutor])
+    }
+    const agendarConsulta = (consulta: Consulta) => {
+        setConsultas([...consultas, consulta])
+    }
+    useEffect(() => {
+        localStorage.setItem('consultas', JSON.stringify(consultas))
+    }, [consultas])
+    useEffect(() => {
+        localStorage.setItem('doutores', JSON.stringify(doutores))
+    }, [doutores])
+
+    
     return (
-        <ConsultasContext.Provider value={{doutores, consultas, adicionarDoutor, agendarConsulta}}>
+        <ConsultasContext.Provider value={{ doutores, consultas, adicionarDoutor, agendarConsulta }}>
             {children}
         </ConsultasContext.Provider>
     )

@@ -1,10 +1,11 @@
 import { Box, Button, Card, Container, MenuItem, Select, TextField } from "@mui/material"
 import { ConsultasContext } from "../../context/ConsultasContext"
 import {useContext, useState} from 'react'
+import { addMinutes, setHours, setMinutes } from "date-fns"
 
 export default function AgendarConsulta() {
 
-   const {consultas, doutores} = useContext(ConsultasContext)
+   const {consultas, doutores, agendarConsulta} = useContext(ConsultasContext)
 
    const [data, setData] = useState('')
    const [nomePaciente, setNomePaciente] = useState('')
@@ -15,14 +16,32 @@ export default function AgendarConsulta() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
-        agendarConsulta!({ id:consultas?.length , nomePaciente, numeroTel, emailDoutor, data:''  })
+        
+        const dataAtual = new Date(data)
+        const [horas, minutos] = time.split(':')
+        const dataComHora = setMinutes(setHours(dataAtual, Number(horas)), Number(minutos))
+
+        const fusoHorario = dataComHora.getTimezoneOffset();
+        const dataUTC = addMinutes(dataComHora, fusoHorario).toISOString();
+
+        console.log(dataUTC)
+
+        agendarConsulta!({ id:consultas?.length , nomePaciente, numeroTel, emailDoutor, data:dataUTC  })
+        setData('')
+        setNomePaciente('')
+        setNumeroTel('')
+        setEmailDoutor('')
+        setTime('08:00')
     }
+    
+
+    
     
     const horarios = []
     for( let i = 8; i< 18; i++){
         horarios.push(i< 10 ? `0${i}:00` : `${i}:00`)
     }
-   //console.log(doutores)
+   console.log(consultas)
     return (
         <Container maxWidth="sm">
             <Box
@@ -47,8 +66,10 @@ export default function AgendarConsulta() {
                             onChange={(e => setNumeroTel(e.target.value))}
 
                         />
+
                         <TextField
                             label="Data"
+                            
                             type="date"
                             value={data}
                             onChange={(e => setData(e.target.value))}
